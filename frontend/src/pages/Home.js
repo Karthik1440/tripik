@@ -23,12 +23,14 @@ export default function Home() {
   const [activeBanner, setActiveBanner] = useState(0);
 
   useEffect(() => {
+    if (user === undefined) return;
     fetchInitialData();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
+    if (user === undefined) return;
     fetchPackages();
-  }, [selectedCat]);
+  }, [selectedCat, user]);
 
   const fetchInitialData = async () => {
     try {
@@ -101,7 +103,7 @@ export default function Home() {
           </div>
           <div style={s.bannerDots}>
             {banners.map((_, i) => (
-              <div key={i} style={{...s.dot, background: activeBanner === i ? '#fff' : 'rgba(255,255,255,0.4)'}} />
+              <div key={i} style={{ ...s.dot, background: activeBanner === i ? '#fff' : 'rgba(255,255,255,0.4)' }} />
             ))}
           </div>
         </div>
@@ -123,17 +125,17 @@ export default function Home() {
 
       {/* ── CATEGORIES ── */}
       <div style={s.catBar}>
-        <button 
-          style={{...s.catItem, ...(selectedCat === null ? s.catActive : {})}}
+        <button
+          style={{ ...s.catItem, ...(selectedCat === null ? s.catActive : {}) }}
           onClick={() => setSelectedCat(null)}
         >
           <TrendingUp size={20} />
           <span>All</span>
         </button>
         {categories.map(c => (
-          <button 
-            key={c.id} 
-            style={{...s.catItem, ...(selectedCat === c.slug ? s.catActive : {})}}
+          <button
+            key={c.id}
+            style={{ ...s.catItem, ...(selectedCat === c.slug ? s.catActive : {}) }}
             onClick={() => setSelectedCat(c.slug)}
           >
             <span>{c.name}</span>
@@ -145,7 +147,7 @@ export default function Home() {
       <main style={s.main}>
         <div style={s.sectionHead}>
           <h3 style={s.sectionTitle}>
-             {selectedCat ? `${selectedCat.charAt(0).toUpperCase() + selectedCat.slice(1)} Trips` : 'Explore Destinations'}
+            {selectedCat ? `${selectedCat.charAt(0).toUpperCase() + selectedCat.slice(1)} Trips` : 'Explore Destinations'}
           </h3>
         </div>
 
@@ -159,15 +161,15 @@ export default function Home() {
                     style={s.gFavBtn}
                     onClick={(e) => { e.stopPropagation(); toggleFavorite(p); }}
                   >
-                    <Heart 
-                      size={24} 
-                      fill={isFavorite(p.id) ? "#ed4956" : "none"} 
+                    <Heart
+                      size={24}
+                      fill={isFavorite(p.id) ? "#ed4956" : "none"}
                       color={isFavorite(p.id) ? "#ed4956" : "#fff"}
-                      style={{ 
-                        transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
+                      style={{
+                        transition: 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                         transform: isFavorite(p.id) ? 'scale(1.15)' : 'scale(1)',
-                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' 
-                      }} 
+                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                      }}
                     />
                   </button>
                   <div style={s.gBadge}>{p.days}D / {p.nights}N</div>
