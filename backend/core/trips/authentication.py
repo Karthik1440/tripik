@@ -5,20 +5,33 @@ from rest_framework.exceptions import AuthenticationFailed
 from django.conf import settings
 from .models import AppUser
 import os
-
+import json
 
 def get_firebase_app():
     if not firebase_admin._apps:
-        # Try settings first, then env directly, then hardcoded path
-        cred_path = (
-            settings.FIREBASE_CREDENTIALS_PATH
-            or os.getenv('FIREBASE_CREDENTIALS_PATH')
-            or r'C:\Users\karth\travel-app\backend\core\firebase-service-account.json'
-        )
-        print("Using Firebase cred path:", cred_path)
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred)
 
+        # ✅ 1. Try ENV JSON (production - Render)
+        firebase_creds_str = os.getenv("FIREBASE_CREDENTIALS")
+
+        if firebase_creds_str:
+            try:
+                firebase_creds = json.loads(firebase_creds_str)
+                cred = credentials.Certificate(firebase_creds)
+                print("Using Firebase from ENV")
+            except Exception as e:
+                raise Exception(f"Invalid FIREBASE_CREDENTIALS: {str(e)}")
+
+        else:
+            # ✅ 2. Optional: Local development only
+            cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH")
+
+            if not cred_path:
+                raise Exception("Firebase credentials not configured")
+
+            print("Using Firebase cred path:", cred_path)
+            cred = credentials.Certificate(cred_path)
+
+        firebase_admin.initialize_app(cred)
 
 class FirebaseAuthentication(BaseAuthentication):
     def authenticate(self, request):
