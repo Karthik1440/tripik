@@ -20,7 +20,16 @@ export default function ForgotPassword() {
       await sendPasswordResetEmail(auth, email);
       setSubmitted(true);
     } catch (err) {
-      setError(err.message);
+      console.error("Firebase Reset Error:", err.code, err.message);
+      if (err.code === 'auth/user-not-found') {
+        setError("This email is not registered in our system.");
+      } else if (err.code === 'auth/invalid-email') {
+        setError("The email address is badly formatted.");
+      } else if (err.code === 'auth/too-many-requests') {
+        setError("Too many requests. Please try again later.");
+      } else {
+        setError(`Error: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -36,8 +45,11 @@ export default function ForgotPassword() {
           <h2 style={s.title}>Check your email</h2>
           <p style={s.subtitle}>
             We've sent a password reset link to <strong>{email}</strong>. 
-            Please check your inbox and follow the instructions.
           </p>
+          <div style={s.debugBox}>
+            <p>Project: {auth.config.projectId}</p>
+            <p>If you don't see it, check your Spam folder.</p>
+          </div>
           <button style={s.submitBtn} onClick={() => navigate('/login')}>
             Back to Login
           </button>
@@ -100,5 +112,7 @@ const s = {
   
   errorMsg: { background: '#fff5f5', color: '#e53e3e', padding: '12px', borderRadius: 12, fontSize: 13, fontWeight: 600, marginBottom: 20 },
   
-  successIcon: { marginBottom: 25, display: 'flex', justifyContent: 'center' }
+  successIcon: { marginBottom: 25, display: 'flex', justifyContent: 'center' },
+
+  debugBox: { background: 'var(--bg-page)', padding: '15px', borderRadius: '12px', marginBottom: '25px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'left', border: '1px solid var(--border)' }
 };
