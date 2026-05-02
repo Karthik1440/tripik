@@ -14,6 +14,7 @@ import UserBookings from './pages/UserBookings';
 import Packages from './pages/Packages';
 import Favorites from './pages/Favorites';
 import Notifications from './pages/Notifications';
+import ForgotPassword from './pages/ForgotPassword';
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
                 {/* ── Public Routes ── */}
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/package/:packageId" element={<PackageDetail />} />
                 <Route path="/packages" element={<Packages />} />
                 <Route path="/favorites" element={<Favorites />} />

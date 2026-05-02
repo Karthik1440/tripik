@@ -77,7 +77,13 @@ export default function Login() {
           </div>
 
           {!isRegister && (
-            <button type="button" style={s.forgotBtn}>Forgot password?</button>
+            <button 
+              type="button" 
+              style={s.forgotBtn}
+              onClick={() => navigate('/forgot-password')}
+            >
+              Forgot password?
+            </button>
           )}
 
           <button style={s.submitBtn} disabled={loading}>
