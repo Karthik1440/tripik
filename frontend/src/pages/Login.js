@@ -192,7 +192,7 @@ const s = {
     borderRadius: 'var(--radius-lg)',
     fontSize: 15,
     fontWeight: 500,
-    color: '#fff',
+    color: '#1a1a1a',
     backdropFilter: 'blur(4px)'
   },
   eyeBtn: { position: 'absolute', right: 18, background: 'none', color: 'rgba(255,255,255,0.6)' },
