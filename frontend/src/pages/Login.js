@@ -183,7 +183,7 @@ const s = {
   form: { display: 'flex', flexDirection: 'column', gap: 20 },
   inputGroup: { textAlign: 'left' },
   inputWrap: { position: 'relative', display: 'flex', alignItems: 'center' },
-  inputIcon: { position: 'absolute', left: 18, color: 'rgba(255,255,255,0.6)' },
+  inputIcon: { position: 'absolute', left: 18, color: 'rgba(49, 48, 48, 0.6)' },
   input: {
     width: '100%',
     background: 'rgba(255,255,255,0.1)',
