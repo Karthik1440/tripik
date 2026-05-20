@@ -44,7 +44,7 @@ export default function ForgotPassword() {
           </div>
           <h2 style={s.title}>Check your email</h2>
           <p style={s.subtitle}>
-            We've sent a password reset link to <strong>{email}</strong>. 
+            We've sent a password reset link to <strong>{email}</strong>.
           </p>
           <div style={s.debugBox}>
             <p>Project: {auth.config.projectId}</p>
@@ -97,21 +97,21 @@ export default function ForgotPassword() {
 const s = {
   page: { minHeight: '100vh', background: 'var(--bg-page)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 },
   card: { width: '100%', maxWidth: 400, background: '#fff', borderRadius: 32, padding: '40px 30px', boxShadow: 'var(--shadow-lg)', textAlign: 'center' },
-  
+
   backLink: { display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, marginBottom: 30, textDecoration: 'none', transition: 'color 0.3s' },
-  
+
   title: { fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 8px' },
   subtitle: { fontSize: 14, color: 'var(--text-muted)', marginBottom: 35, lineHeight: 1.6 },
-  
+
   form: { display: 'flex', flexDirection: 'column', gap: 18 },
   inputWrap: { position: 'relative', display: 'flex', alignItems: 'center' },
   inputIcon: { position: 'absolute', left: 18 },
   input: { width: '100%', background: 'var(--bg-input)', border: '1px solid transparent', padding: '16px 18px 16px 50px', borderRadius: 18, fontSize: 15, fontWeight: 500 },
-  
+
   submitBtn: { background: 'var(--text-primary)', color: '#fff', padding: '16px', borderRadius: 18, fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 10, transition: 'all 0.3s', width: '100%', border: 'none', cursor: 'pointer' },
-  
+
   errorMsg: { background: '#fff5f5', color: '#e53e3e', padding: '12px', borderRadius: 12, fontSize: 13, fontWeight: 600, marginBottom: 20 },
-  
+
   successIcon: { marginBottom: 25, display: 'flex', justifyContent: 'center' },
 
   debugBox: { background: 'var(--bg-page)', padding: '15px', borderRadius: '12px', marginBottom: '25px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'left', border: '1px solid var(--border)' }

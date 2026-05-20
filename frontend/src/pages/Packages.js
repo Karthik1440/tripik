@@ -28,7 +28,7 @@ export default function Packages() {
     }
   };
 
-  const filtered = packages.filter(p => 
+  const filtered = packages.filter(p =>
     (activeTab === 'All' || p.accommodation_type?.toLowerCase().includes(activeTab.toLowerCase())) &&
     (p.title.toLowerCase().includes(search.toLowerCase()) || p.to_location.toLowerCase().includes(search.toLowerCase()))
   );
@@ -52,18 +52,18 @@ export default function Packages() {
       <div style={s.searchWrap}>
         <div style={s.searchBar}>
           <Search size={20} color="var(--text-muted)" />
-          <input 
-            style={s.searchInput} 
-            placeholder="Search destination, theme..." 
+          <input
+            style={s.searchInput}
+            placeholder="Search destination, theme..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <div style={s.tabs} className="hide-scrollbar">
           {['All', 'Budget', 'Luxury', 'Family', 'Honeymoon'].map(t => (
-            <button 
+            <button
               key={t}
-              style={{...s.tab, ...(activeTab === t ? s.tabActive : {})}}
+              style={{ ...s.tab, ...(activeTab === t ? s.tabActive : {}) }}
               onClick={() => setActiveTab(t)}
             >
               {t}
@@ -78,7 +78,7 @@ export default function Packages() {
           <div style={s.loader}><div className="spinner" /></div>
         ) : filtered.length === 0 ? (
           <div style={s.empty}>
-            <Search size={48} color="var(--text-muted)" style={{marginBottom:15}} />
+            <Search size={48} color="var(--text-muted)" style={{ marginBottom: 15 }} />
             <p>No packages found matching your search.</p>
           </div>
         ) : (
@@ -87,7 +87,7 @@ export default function Packages() {
               <div key={p.id} style={s.card} onClick={() => navigate(`/package/${p.id}`)}>
                 <div style={s.cardImgWrap}>
                   {p.banner_url && <img src={p.banner_url} alt="" style={s.cardImg} />}
-                  <button 
+                  <button
                     style={s.favBtn}
                     onClick={(e) => { e.stopPropagation(); toggleFavorite(p); }}
                   >
@@ -100,7 +100,7 @@ export default function Packages() {
                     <h3 style={s.cardTitle}>{p.title}</h3>
                     <div style={s.cardRating}><Star size={14} fill="var(--accent)" color="var(--accent)" /> {p.avg_rating || '5.0'}</div>
                   </div>
-                  <div style={s.cardLoc}><MapPin size={14} style={{marginRight:4}} /> {p.to_location}</div>
+                  <div style={s.cardLoc}><MapPin size={14} style={{ marginRight: 4 }} /> {p.to_location}</div>
                   <p style={s.cardDesc}>{p.short_description}</p>
                   <div style={s.cardFooter}>
                     <span style={s.cardDuration}>{p.days} Days / {p.nights} Nights</span>
@@ -119,7 +119,7 @@ export default function Packages() {
           <HomeIcon size={24} />
           <span style={s.navLabel}>Home</span>
         </button>
-        <button style={{...s.navItem, color: 'var(--primary)'}} onClick={() => navigate('/packages')}>
+        <button style={{ ...s.navItem, color: 'var(--primary)' }} onClick={() => navigate('/packages')}>
           <Briefcase size={24} />
           <span style={s.navLabel}>Packages</span>
           <div style={s.navDot} />
@@ -164,7 +164,7 @@ const s = {
   cardImg: { width: '100%', height: '100%', objectFit: 'cover' },
   favBtn: { position: 'absolute', top: 15, right: 15, width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   priceTag: { position: 'absolute', bottom: 15, left: 15, background: 'var(--primary)', color: '#fff', padding: '6px 14px', borderRadius: 12, fontWeight: 800, fontSize: 14, boxShadow: '0 4px 12px rgba(26,158,92,0.3)' },
-  
+
   cardBody: { padding: '18px 20px' },
   cardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 5 },
   cardTitle: { fontSize: 17, fontWeight: 800, margin: 0, flex: 1 },

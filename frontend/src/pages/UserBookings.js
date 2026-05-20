@@ -16,7 +16,7 @@ export default function UserBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('All');
-  
+
   const [reviewModal, setReviewModal] = useState({ show: false, booking: null });
   const [reviewData, setReviewData] = useState({ rating: 5, accommodation_rating: 5, guide_rating: 5, experience_rating: 5, title: '', review_text: '' });
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -52,7 +52,7 @@ export default function UserBookings() {
   };
 
   const submitReview = async () => {
-    if(!reviewData.title || !reviewData.review_text) return alert('Please fill in both the title and the review text.');
+    if (!reviewData.title || !reviewData.review_text) return alert('Please fill in both the title and the review text.');
     try {
       setReviewSubmitting(true);
       await api.post(`/trips/bookings/${reviewModal.booking.id}/review/`, reviewData);
@@ -109,11 +109,11 @@ export default function UserBookings() {
       <header style={s.header}>
         <div style={s.headerInner}>
           <h1 style={s.headerTitle}>My Account</h1>
-          <div style={{display:'flex', gap:10}}>
-             <button style={s.refreshCircle} onClick={fetchBookings} title="Refresh Data">
-               <Clock size={16} className={loading ? 'animate-spin' : ''} />
-             </button>
-             <button style={s.logoutBtn} onClick={handleLogout}>Logout</button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button style={s.refreshCircle} onClick={fetchBookings} title="Refresh Data">
+              <Clock size={16} className={loading ? 'animate-spin' : ''} />
+            </button>
+            <button style={s.logoutBtn} onClick={handleLogout}>Logout</button>
           </div>
         </div>
         <div style={s.profileCard}>
@@ -163,14 +163,14 @@ export default function UserBookings() {
                 </div>
 
                 <div style={s.cardCore}>
-                   {b.package_banner && <img src={b.package_banner} alt="" style={s.cardImg} />}
-                   <div style={s.cardInfo}>
-                     <h3 style={s.packageTitle}>{b.package_title}</h3>
-                     <div style={s.metaWrap}>
-                       <div style={s.metaItem}><MapPin size={14} /> {b.destination}</div>
-                       <div style={s.metaItem}><Clock size={14} /> {b.days}D/{b.nights}N</div>
-                     </div>
-                   </div>
+                  {b.package_banner && <img src={b.package_banner} alt="" style={s.cardImg} />}
+                  <div style={s.cardInfo}>
+                    <h3 style={s.packageTitle}>{b.package_title}</h3>
+                    <div style={s.metaWrap}>
+                      <div style={s.metaItem}><MapPin size={14} /> {b.destination}</div>
+                      <div style={s.metaItem}><Clock size={14} /> {b.days}D/{b.nights}N</div>
+                    </div>
+                  </div>
                 </div>
 
                 <div style={s.metaDetails}>
@@ -247,27 +247,27 @@ export default function UserBookings() {
           <div style={s.modalContent} onClick={e => e.stopPropagation()}>
             <h2 style={s.modalTitle}>Write a Review</h2>
             <p style={s.modalSub}>For {reviewModal.booking?.package_title}</p>
-            
+
             <div style={s.ratingGroup}>
               <label style={s.inputLabel}>Overall Rating</label>
               <div style={s.stars}>
-                {[1,2,3,4,5].map(star => (
-                  <Star key={star} size={24} fill={reviewData.rating >= star ? '#f59e0b' : 'transparent'} color={reviewData.rating >= star ? '#f59e0b' : '#d1d5db'} onClick={() => setReviewData({...reviewData, rating: star})} style={{cursor:'pointer'}} />
+                {[1, 2, 3, 4, 5].map(star => (
+                  <Star key={star} size={24} fill={reviewData.rating >= star ? '#f59e0b' : 'transparent'} color={reviewData.rating >= star ? '#f59e0b' : '#d1d5db'} onClick={() => setReviewData({ ...reviewData, rating: star })} style={{ cursor: 'pointer' }} />
                 ))}
               </div>
             </div>
 
             <div style={s.inputGroup}>
               <label style={s.inputLabel}>Review Title</label>
-              <input style={s.input} value={reviewData.title} onChange={e => setReviewData({...reviewData, title: e.target.value})} placeholder="Give your review a title" />
+              <input style={s.input} value={reviewData.title} onChange={e => setReviewData({ ...reviewData, title: e.target.value })} placeholder="Give your review a title" />
             </div>
 
             <div style={s.inputGroup}>
               <label style={s.inputLabel}>Review text</label>
-              <textarea style={{...s.input, minHeight: 80, resize: 'vertical' }} value={reviewData.review_text} onChange={e => setReviewData({...reviewData, review_text: e.target.value})} placeholder="Tell us about your experience..." />
+              <textarea style={{ ...s.input, minHeight: 80, resize: 'vertical' }} value={reviewData.review_text} onChange={e => setReviewData({ ...reviewData, review_text: e.target.value })} placeholder="Tell us about your experience..." />
             </div>
-            
-            <button style={{...s.submitReviewBtn, opacity: reviewSubmitting ? 0.7 : 1}} onClick={submitReview} disabled={reviewSubmitting}>
+
+            <button style={{ ...s.submitReviewBtn, opacity: reviewSubmitting ? 0.7 : 1 }} onClick={submitReview} disabled={reviewSubmitting}>
               {reviewSubmitting ? 'Submitting...' : 'Submit Review'}
             </button>
           </div>
@@ -313,7 +313,7 @@ const s = {
   cardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
   statusBadge: { padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6 },
   bookingId: { fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 },
-  
+
   cardCore: { display: 'flex', gap: 15, marginBottom: 15 },
   cardImg: { width: 80, height: 80, borderRadius: 16, objectFit: 'cover' },
   cardInfo: { flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' },

@@ -43,7 +43,7 @@ export default function Notifications() {
           <h2 style={s.headerTitle}>Notifications</h2>
           {notifications.length > 0 ? (
             <button style={s.clearBtn} onClick={() => {
-              if(window.confirm('Are you sure you want to clear all your notifications?')) clearAllNotifications();
+              if (window.confirm('Are you sure you want to clear all your notifications?')) clearAllNotifications();
             }}>
               <Trash2 size={18} color="var(--text-muted)" />
             </button>
@@ -66,7 +66,7 @@ export default function Notifications() {
           <div style={s.list}>
             {notifications.map(n => (
               <div key={n.id} style={s.card}>
-                <div style={{...s.iconBox, background: getBg(n.notification_type)}}>
+                <div style={{ ...s.iconBox, background: getBg(n.notification_type) }}>
                   {getIcon(n.notification_type)}
                 </div>
                 <div style={s.content}>
