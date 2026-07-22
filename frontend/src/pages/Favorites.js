@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Heart, ArrowLeft, MapPin, Star, Trash2, Home as HomeIcon, Briefcase, User, Sparkles } from 'lucide-react';
 import { useFavorites } from '../context/FavoritesContext';
+import BottomNav from '../components/BottomNav';
 import { Helmet } from 'react-helmet-async';
 
 export default function Favorites() {
@@ -76,25 +77,7 @@ export default function Favorites() {
       </main>
 
       {/* ── BOTTOM NAV ── */}
-      <nav style={s.bottomNav}>
-        <button style={s.navItem} onClick={() => navigate('/')}>
-          <HomeIcon size={24} />
-          <span style={s.navLabel}>Home</span>
-        </button>
-        <button style={s.navItem} onClick={() => navigate('/bookings')}>
-          <Briefcase size={24} />
-          <span style={s.navLabel}>Bookings</span>
-        </button>
-        <button style={{ ...s.navItem, color: 'var(--primary)' }} onClick={() => navigate('/favorites')}>
-          <Heart size={24} fill="var(--primary)" />
-          <span style={s.navLabel}>Favorites</span>
-          <div style={s.navDot} />
-        </button>
-        <button style={s.navItem} onClick={() => navigate('/profile')}>
-          <User size={24} />
-          <span style={s.navLabel}>Account</span>
-        </button>
-      </nav>
+      <BottomNav />
     </div>
   );
 }

@@ -19,8 +19,12 @@ class AppUser(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
-    icon = models.CharField(max_length=50, help_text="Lucide icon name (e.g., 'palmtree')")
+    icon = models.CharField(max_length=50, blank=True, help_text="Lucide icon name (e.g., 'palmtree')")
+    image = models.ImageField(upload_to='categories/', blank=True, null=True, help_text="Upload category icon image (20x20 or thumbnail)")
     is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name_plural = "Categories"
 
     def __str__(self): return self.name
 
@@ -35,7 +39,25 @@ class HeroBanner(models.Model):
     class Meta:
         ordering = ['order']
 
-    def __str__(self): return self.title
+    def __str__(self):
+        return self.title
+
+
+class SecondaryBanner(models.Model):
+    title = models.CharField(max_length=255, default="Solo, Couple Or Friends - We Have Trips for All")
+    subtitle = models.TextField(blank=True, default="Most travellers don't just travel with us, they meet strangers who quickly turn into their people.")
+    image = models.ImageField(upload_to='banners/', blank=True, null=True, help_text="Upload custom Banner 2 image")
+    button_text = models.CharField(max_length=50, default="Explore Trips", blank=True)
+    link_to = models.CharField(max_length=255, default="/packages", blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Secondary Banner (Under Why Tripik)"
+        verbose_name_plural = "Secondary Banners (Under Why Tripik)"
+
+    def __str__(self):
+        return self.title
 
 
 # 1. TourPackage Model
@@ -142,7 +164,7 @@ class PackageAddon(models.Model):
 class PackageBooking(models.Model):
     STATUS_CHOICES = [('inquiry', 'Inquiry'), ('confirmed', 'Confirmed'), ('completed', 'Completed'), ('cancelled', 'Cancelled')]
     package = models.ForeignKey(TourPackage, on_delete=models.CASCADE, related_name='bookings')
-    user = models.ForeignKey(AppUser, on_delete=models.CASCADE, related_name='package_bookings')
+    user = models.ForeignKey(AppUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='package_bookings')
     adults = models.PositiveIntegerField(default=1)
     children = models.PositiveIntegerField(default=0)
     start_date = models.DateField()
@@ -161,7 +183,7 @@ class PackageBooking(models.Model):
 class PackageReview(models.Model):
     package = models.ForeignKey(TourPackage, on_delete=models.CASCADE, related_name='reviews')
     booking = models.OneToOneField(PackageBooking, on_delete=models.CASCADE, related_name='review')
-    user = models.ForeignKey(AppUser, on_delete=models.CASCADE, related_name='package_reviews')
+    user = models.ForeignKey(AppUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='package_reviews')
     rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
     title = models.CharField(max_length=255)
     review_text = models.TextField()
@@ -180,3 +202,84 @@ class Notification(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(null=True, blank=True)
+
+
+class HiddenSpot(models.Model):
+    name = models.CharField(max_length=255)
+    category = models.CharField(max_length=100, default='General')
+    address = models.CharField(max_length=255)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    nearby_landmark = models.CharField(max_length=255, blank=True)
+    description = models.TextField()
+    distance_km = models.PositiveIntegerField(default=75)
+    cover_image = models.ImageField(upload_to='hidden_spots/')
+    image_2 = models.ImageField(upload_to='hidden_spots/', null=True, blank=True)
+    image_3 = models.ImageField(upload_to='hidden_spots/', null=True, blank=True)
+    submitted_by = models.ForeignKey(AppUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='hidden_spots')
+    avg_rating = models.FloatField(default=4.7)
+    reviews_count = models.PositiveIntegerField(default=12)
+    is_approved = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.address})"
+
+
+class BlogPost(models.Model):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    category = models.CharField(max_length=100, default='Travel Guide')
+    read_time = models.CharField(max_length=50, default='5 min read')
+    cover_image = models.ImageField(upload_to='blogs/')
+    excerpt = models.TextField(help_text="Short summary displayed on cards")
+    content = models.TextField(help_text="Full blog post content")
+    author_name = models.CharField(max_length=100, default="Tripik Team")
+    is_published = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Blog Post"
+        verbose_name_plural = "Blog Posts"
+
+    def __str__(self):
+        return self.title
+
+
+class FAQItem(models.Model):
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+        verbose_name = "FAQ Item"
+        verbose_name_plural = "FAQ Items"
+
+    def __str__(self):
+        return self.question
+
+
+class AnnouncementBar(models.Model):
+    badge_text = models.CharField(max_length=50, default="ANNOUNCEMENT")
+    message = models.TextField(default="🎉 Special Launch Offer: Book your Kashmir & Kerala group departure with zero booking fees!")
+    link_url = models.CharField(max_length=255, blank=True, null=True, help_text="Optional relative or full URL link")
+    bg_color = models.CharField(max_length=50, default="#b45309", help_text="HEX or CSS background color")
+    text_color = models.CharField(max_length=50, default="#ffffff")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Announcement Bar"
+        verbose_name_plural = "Announcement Bars"
+
+    def __str__(self):
+        return f"Announcement ({'Active' if self.is_active else 'Disabled'}): {self.message[:40]}"

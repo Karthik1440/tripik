@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
+import BottomNav from '../components/BottomNav';
 
 export default function UserBookings() {
   const navigate = useNavigate();
@@ -22,15 +23,7 @@ export default function UserBookings() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      fetchBookings();
-      // Auto-refresh when tab is focused
-      const onFocus = () => fetchBookings();
-      window.addEventListener('focus', onFocus);
-      return () => window.removeEventListener('focus', onFocus);
-    } else {
-      navigate('/login');
-    }
+    fetchBookings();
   }, [user]);
 
   const handleLogout = async () => {
@@ -45,7 +38,7 @@ export default function UserBookings() {
       const res = await api.get('/trips/bookings/');
       setBookings(res.data);
     } catch (e) {
-      console.error(e);
+      console.error('Error fetching bookings:', e);
     } finally {
       setLoading(false);
     }
@@ -186,7 +179,8 @@ export default function UserBookings() {
                   {b.status === 'inquiry' && (
                     <button style={s.waBtn} onClick={(e) => {
                       e.stopPropagation();
-                      window.open(`https://wa.me/916238980278?text=Inquiry for ${b.package_title} (ID: ${b.id})`);
+                      const msg = `Hi Tripik Team! 👋 I have an inquiry for *${b.package_title}* (Booking ID: #${b.id}). Please share more details & itinerary!`;
+                      window.open(`https://wa.me/916238980278?text=${encodeURIComponent(msg)}`, '_blank');
                     }}>
                       <MessageSquare size={16} /> Chat
                     </button>
@@ -221,25 +215,7 @@ export default function UserBookings() {
       </main>
 
       {/* ── BOTTOM NAV ── */}
-      <nav style={s.bottomNav}>
-        <button style={s.navItem} onClick={() => navigate('/')}>
-          <HomeIcon size={24} />
-          <span style={s.navLabel}>Home</span>
-        </button>
-        <button style={s.navItem} onClick={() => navigate('/packages')}>
-          <Briefcase size={24} />
-          <span style={s.navLabel}>Packages</span>
-        </button>
-        <button style={s.navItem} onClick={() => navigate('/favorites')}>
-          <Heart size={24} />
-          <span style={s.navLabel}>Favorites</span>
-        </button>
-        <button style={{ ...s.navItem, color: 'var(--primary)' }} onClick={() => navigate('/bookings')}>
-          <User size={24} />
-          <span style={s.navLabel}>Account</span>
-          <div style={s.navDot} />
-        </button>
-      </nav>
+      <BottomNav />
 
       {/* ── REVIEW MODAL ── */}
       {reviewModal.show && (

@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import (
     AppUser, TourPackage, DayItinerary, ItineraryPlace, PricingBreakdown,
     PackageIncludeExclude, PackageAddon, PackageBooking, PackageReview, Notification,
-    PackageImage, Category, HeroBanner
+    PackageImage, Category, HeroBanner, SecondaryBanner, HiddenSpot, BlogPost, FAQItem, AnnouncementBar
 )
 
 class ItineraryPlaceSerializer(serializers.ModelSerializer):
@@ -27,9 +27,22 @@ class PackageIncludeExcludeSerializer(serializers.ModelSerializer):
         fields = ['type', 'text']
 
 class CategorySerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug', 'icon']
+        fields = ['id', 'name', 'slug', 'icon', 'image_url']
+
+    def get_image_url(self, obj):
+        if obj.image:
+            url = obj.image.url
+            if url.startswith('http'):
+                return url
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
 
 class HeroBannerSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -46,6 +59,45 @@ class HeroBannerSerializer(serializers.ModelSerializer):
             if request:
                 return request.build_absolute_uri(url)
         return None
+
+class SecondaryBannerSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+    class Meta:
+        model = SecondaryBanner
+        fields = ['id', 'title', 'subtitle', 'image_url', 'button_text', 'link_to']
+
+    def get_image_url(self, obj):
+        if obj.image:
+            url = obj.image.url
+            if url.startswith('http'):
+                return url
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
+
+class BlogPostSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+    class Meta:
+        model = BlogPost
+        fields = ['id', 'title', 'slug', 'category', 'read_time', 'image_url', 'excerpt', 'content', 'author_name', 'created_at']
+
+    def get_image_url(self, obj):
+        if obj.cover_image:
+            url = obj.cover_image.url
+            if url.startswith('http'):
+                return url
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
+
+class FAQItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQItem
+        fields = ['id', 'question', 'answer', 'order']
 
 class PackageAddonSerializer(serializers.ModelSerializer):
     class Meta:
@@ -188,3 +240,54 @@ class PackageReviewCreateSerializer(serializers.ModelSerializer):
             'accommodation_rating', 'guide_rating', 'experience_rating',
             'review_photo'
         ]
+
+class HiddenSpotSerializer(serializers.ModelSerializer):
+    cover_image_url = serializers.SerializerMethodField()
+    image_2_url = serializers.SerializerMethodField()
+    image_3_url = serializers.SerializerMethodField()
+    photos = serializers.SerializerMethodField()
+
+    class Meta:
+        model = HiddenSpot
+        fields = [
+            'id', 'name', 'category', 'address', 'latitude', 'longitude',
+            'nearby_landmark', 'description', 'distance_km', 'cover_image_url',
+            'image_2_url', 'image_3_url', 'photos', 'avg_rating', 'reviews_count',
+            'created_at'
+        ]
+
+    def _resolve_url(self, field_obj):
+        if field_obj:
+            url = field_obj.url
+            if url.startswith('http'):
+                return url
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
+
+    def get_cover_image_url(self, obj):
+        return self._resolve_url(obj.cover_image)
+
+    def get_image_2_url(self, obj):
+        return self._resolve_url(obj.image_2)
+
+    def get_image_3_url(self, obj):
+        return self._resolve_url(obj.image_3)
+
+    def get_photos(self, obj):
+        photos = []
+        c = self.get_cover_image_url(obj)
+        i2 = self.get_image_2_url(obj)
+        i3 = self.get_image_3_url(obj)
+        if c: photos.append(c)
+        if i2: photos.append(i2)
+        if i3: photos.append(i3)
+        return photos
+
+
+class AnnouncementBarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnnouncementBar
+        fields = '__all__'

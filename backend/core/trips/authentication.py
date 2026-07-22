@@ -9,7 +9,6 @@ import json
 
 def get_firebase_app():
     if not firebase_admin._apps:
-
         # ✅ 1. Try ENV JSON (production - Render)
         firebase_creds_str = os.getenv("FIREBASE_CREDENTIALS")
 
@@ -17,21 +16,26 @@ def get_firebase_app():
             try:
                 firebase_creds = json.loads(firebase_creds_str)
                 cred = credentials.Certificate(firebase_creds)
-                print("Using Firebase from ENV")
+                firebase_admin.initialize_app(cred)
+                return True
             except Exception as e:
-                raise Exception(f"Invalid FIREBASE_CREDENTIALS: {str(e)}")
+                print(f"Invalid FIREBASE_CREDENTIALS: {str(e)}")
+                return False
 
-        else:
-            # ✅ 2. Optional: Local development only
-            cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH")
+        # ✅ 2. Local development fallback
+        cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH")
+        if cred_path and os.path.exists(cred_path):
+            try:
+                print("Using Firebase cred path:", cred_path)
+                cred = credentials.Certificate(cred_path)
+                firebase_admin.initialize_app(cred)
+                return True
+            except Exception as e:
+                print("Firebase cred path init failed:", e)
+                return False
 
-            if not cred_path:
-                raise Exception("Firebase credentials not configured")
-
-            print("Using Firebase cred path:", cred_path)
-            cred = credentials.Certificate(cred_path)
-
-        firebase_admin.initialize_app(cred)
+        return False
+    return True
 
 class FirebaseAuthentication(BaseAuthentication):
     def authenticate(self, request):
@@ -42,7 +46,8 @@ class FirebaseAuthentication(BaseAuthentication):
 
         id_token = auth_header.split('Bearer ')[1]
 
-        get_firebase_app()
+        if not get_firebase_app():
+            return None
 
         try:
             decoded_token = firebase_auth.verify_id_token(id_token)

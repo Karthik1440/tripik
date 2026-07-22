@@ -10,10 +10,25 @@ const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const user = auth.currentUser;
   if (user) {
-    const token = await user.getIdToken();
-    config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = await user.getIdToken();
+      config.headers.Authorization = `Bearer ${token}`;
+    } catch (err) {
+      console.warn('Failed to fetch Firebase token:', err);
+    }
   }
   return config;
 });
+
+// Response interceptor to handle 401 Unauthorized globally
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      console.warn('API 401 Unauthorized: User session expired or unauthenticated.');
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

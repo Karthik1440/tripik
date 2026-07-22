@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Filter, MapPin, Star, Heart, ArrowLeft, Home as HomeIcon, Briefcase, Navigation, User } from 'lucide-react';
 import api from '../api';
 import { useFavorites } from '../context/FavoritesContext';
+import BottomNav from '../components/BottomNav';
+import Footer from '../components/Footer';
 
 export default function Packages() {
   const navigate = useNavigate();
@@ -12,6 +14,7 @@ export default function Packages() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('All');
+  const [expandedCards, setExpandedCards] = useState({});
 
   useEffect(() => {
     fetchPackages();
@@ -26,6 +29,11 @@ export default function Packages() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleCardExpand = (e, pkgId) => {
+    e.stopPropagation();
+    setExpandedCards(prev => ({ ...prev, [pkgId]: !prev[pkgId] }));
   };
 
   const filtered = packages.filter(p =>
@@ -101,7 +109,36 @@ export default function Packages() {
                     <div style={s.cardRating}><Star size={14} fill="var(--accent)" color="var(--accent)" /> {p.avg_rating || '5.0'}</div>
                   </div>
                   <div style={s.cardLoc}><MapPin size={14} style={{ marginRight: 4 }} /> {p.to_location}</div>
-                  <p style={s.cardDesc}>{p.short_description}</p>
+                  
+                  {/* Package Description with 100-word snippet & Read More / Read Less */}
+                  {(() => {
+                    const fullDesc = p.description || p.short_description || '';
+                    const isExpanded = !!expandedCards[p.id];
+                    const words = fullDesc.split(' ');
+                    const isLong = words.length > 18 || fullDesc.length > 100;
+                    
+                    const descToShow = isExpanded 
+                      ? words.slice(0, 100).join(' ') + (words.length > 100 ? '...' : '')
+                      : words.slice(0, 18).join(' ') + (isLong ? '...' : '');
+
+                    return (
+                      <div style={s.cardDescWrap}>
+                        <p style={s.cardDescText}>
+                          {descToShow}
+                        </p>
+                        {isLong && (
+                          <button
+                            type="button"
+                            onClick={(e) => toggleCardExpand(e, p.id)}
+                            style={s.readMoreBtn}
+                          >
+                            {isExpanded ? 'Read Less ▲' : 'Read More ▼'}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   <div style={s.cardFooter}>
                     <span style={s.cardDuration}>{p.days} Days / {p.nights} Nights</span>
                     <button style={s.bookBtn}>View Details</button>
@@ -113,26 +150,9 @@ export default function Packages() {
         )}
       </main>
 
-      {/* ── BOTTOM NAV ── */}
-      <nav style={s.bottomNav}>
-        <button style={s.navItem} onClick={() => navigate('/')}>
-          <HomeIcon size={24} />
-          <span style={s.navLabel}>Home</span>
-        </button>
-        <button style={{ ...s.navItem, color: 'var(--primary)' }} onClick={() => navigate('/packages')}>
-          <Briefcase size={24} />
-          <span style={s.navLabel}>Packages</span>
-          <div style={s.navDot} />
-        </button>
-        <button style={s.navItem} onClick={() => navigate('/favorites')}>
-          <Heart size={24} />
-          <span style={s.navLabel}>Favorites</span>
-        </button>
-        <button style={s.navItem} onClick={() => navigate('/bookings')}>
-          <User size={24} />
-          <span style={s.navLabel}>Account</span>
-        </button>
-      </nav>
+      {/* ── FOOTER & BOTTOM NAV ── */}
+      <Footer />
+      <BottomNav />
 
       <style>{`
         .spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -143,7 +163,7 @@ export default function Packages() {
 }
 
 const s = {
-  page: { minHeight: '100vh', background: 'var(--bg-page)', paddingBottom: 100 },
+  page: { minHeight: '100vh', background: 'var(--bg-page)', paddingBottom: 0 },
   header: { background: '#fff', position: 'sticky', top: 0, zIndex: 100, borderBottom: '1px solid var(--border)' },
   headerInner: { maxWidth: 500, margin: '0 auto', padding: '15px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   backBtn: { background: 'none', color: 'var(--text-primary)' },
@@ -154,7 +174,7 @@ const s = {
   searchBar: { display: 'flex', alignItems: 'center', gap: 12, background: '#fff', padding: '12px 18px', borderRadius: 16, boxShadow: 'var(--shadow-sm)', marginBottom: 15 },
   searchInput: { border: 'none', fontSize: 14, width: '100%', fontWeight: 500 },
   tabs: { display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 5 },
-  tab: { flexShrink: 0, padding: '8px 18px', borderRadius: 12, background: '#fff', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', border: '1px solid var(--border)' },
+  tab: { flexShrink: 0, padding: '8px 18px', borderRadius: 12, background: '#fff', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', borderWidth: '1px', borderStyle: 'solid', borderColor: 'var(--border)' },
   tabActive: { background: 'var(--text-primary)', color: '#fff', borderColor: 'var(--text-primary)' },
 
   main: { maxWidth: 500, margin: '0 auto', padding: '0 20px' },
@@ -170,7 +190,9 @@ const s = {
   cardTitle: { fontSize: 17, fontWeight: 800, margin: 0, flex: 1 },
   cardRating: { fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, background: 'var(--primary-light)', color: 'var(--primary)', padding: '2px 8px', borderRadius: 8 },
   cardLoc: { fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', marginBottom: 10 },
-  cardDesc: { fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 15px', lineHeight: 1.4, height: 36, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' },
+  cardDescWrap: { margin: '0 0 12px' },
+  cardDescText: { fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5, wordBreak: 'break-word' },
+  readMoreBtn: { background: 'none', border: 'none', color: '#059669', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', padding: '4px 0 0 0', display: 'inline-flex', alignItems: 'center' },
   cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 15, borderTop: '1px solid var(--border-light)' },
   cardDuration: { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' },
   bookBtn: { background: 'var(--text-primary)', color: '#fff', padding: '8px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700 },

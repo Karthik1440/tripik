@@ -14,10 +14,12 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     try {
       if (isRegister) {
         await createUserWithEmailAndPassword(auth, email, password);
@@ -25,8 +27,17 @@ export default function Login() {
         await signInWithEmailAndPassword(auth, email, password);
       }
       navigate('/');
-    } catch (error) {
-      alert(error.message);
+    } catch (err) {
+      console.error('Firebase Auth Error:', err.code, err.message);
+      let msg = 'Authentication failed. Please check your credentials.';
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+        msg = 'Invalid email or password. If you don\'t have an account yet, click "Create one" below.';
+      } else if (err.code === 'auth/email-already-in-use') {
+        msg = 'An account with this email already exists. Please click "Sign In" instead.';
+      } else if (err.code === 'auth/weak-password') {
+        msg = 'Password should be at least 6 characters.';
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -55,6 +66,22 @@ export default function Login() {
           </p>
         </div>
 
+        {error && (
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: '#dc2626',
+            padding: '10px 14px',
+            borderRadius: '12px',
+            fontSize: '13px',
+            fontWeight: '600',
+            marginBottom: '14px',
+            textAlign: 'center',
+          }}>
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} style={s.form}>
           <div style={s.inputGroup}>
             <div style={s.inputWrap}>
@@ -63,6 +90,7 @@ export default function Login() {
                 style={s.input}
                 type="email"
                 placeholder="Email address"
+                autoComplete="username email"
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
@@ -77,6 +105,7 @@ export default function Login() {
                 style={s.input}
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
+                autoComplete={isRegister ? "new-password" : "current-password"}
                 required
                 value={password}
                 onChange={e => setPassword(e.target.value)}
@@ -119,7 +148,7 @@ export default function Login() {
           <div style={s.line} />
         </div>
 
-        <button style={s.toggleBtn} onClick={() => setIsRegister(!isRegister)}>
+        <button style={s.toggleBtn} onClick={() => { setIsRegister(!isRegister); setError(''); }}>
           {isRegister ? (
             <>Already have an account? <span style={s.toggleSpan}>Sign In</span></>
           ) : (

@@ -3,7 +3,7 @@ from django.utils.html import format_html
 from .models import (
     AppUser, TourPackage, DayItinerary, ItineraryPlace, PricingBreakdown,
     PackageIncludeExclude, PackageAddon, PackageBooking, PackageReview, Notification,
-    PackageImage, Category, HeroBanner
+    PackageImage, Category, HeroBanner, SecondaryBanner, HiddenSpot, BlogPost, FAQItem, AnnouncementBar
 )
 
 @admin.register(AppUser)
@@ -12,8 +12,13 @@ class AppUserAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'icon', 'is_active']
+    list_display = ['name', 'slug', 'icon', 'image_preview', 'is_active']
     prepopulated_fields = {'slug': ('name',)}
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="height: 30px; width: 30px; border-radius: 50%; object-fit: cover;" />', obj.image.url)
+        return "-"
 
 @admin.register(HeroBanner)
 class HeroBannerAdmin(admin.ModelAdmin):
@@ -24,6 +29,34 @@ class HeroBannerAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html('<img src="{}" style="height: 50px; border-radius: 4px;" />', obj.image.url)
         return "-"
+
+@admin.register(SecondaryBanner)
+class SecondaryBannerAdmin(admin.ModelAdmin):
+    list_display = ['title', 'is_active', 'image_preview', 'created_at']
+    list_editable = ['is_active']
+    
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="height: 40px; border-radius: 4px;" />', obj.image.url)
+        return "-"
+
+@admin.register(BlogPost)
+class BlogPostAdmin(admin.ModelAdmin):
+    list_display = ['title', 'category', 'read_time', 'author_name', 'is_published', 'created_at', 'image_preview']
+    list_editable = ['is_published']
+    prepopulated_fields = {'slug': ('title',)}
+    search_fields = ['title', 'content', 'category']
+
+    def image_preview(self, obj):
+        if obj.cover_image:
+            return format_html('<img src="{}" style="height: 40px; border-radius: 4px;" />', obj.cover_image.url)
+        return "-"
+
+@admin.register(FAQItem)
+class FAQItemAdmin(admin.ModelAdmin):
+    list_display = ['question', 'order', 'is_active', 'created_at']
+    list_editable = ['order', 'is_active']
+    search_fields = ['question', 'answer']
 
 
 class PricingBreakdownInline(admin.StackedInline):
@@ -95,9 +128,9 @@ class PackageBookingAdmin(admin.ModelAdmin):
     
     actions = ['mark_as_confirmed', 'mark_as_completed', 'mark_as_cancelled']
 
-    @admin.display(description='User')
+    @admin.display(description='User / Guest')
     def user_email(self, obj):
-        return obj.user.email
+        return obj.user.email if obj.user else f"Guest ({obj.phone})"
 
     @admin.display(description='Package')
     def package_title(self, obj):
@@ -143,3 +176,18 @@ class PackageReviewAdmin(admin.ModelAdmin):
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ['title', 'notification_type', 'is_active']
+
+
+@admin.register(HiddenSpot)
+class HiddenSpotAdmin(admin.ModelAdmin):
+    list_display = ['name', 'category', 'address', 'nearby_landmark', 'is_approved', 'created_at']
+    list_filter = ['category', 'is_approved']
+    search_fields = ['name', 'address', 'nearby_landmark', 'description']
+    list_editable = ['is_approved']
+
+
+@admin.register(AnnouncementBar)
+class AnnouncementBarAdmin(admin.ModelAdmin):
+    list_display = ['id', 'badge_text', 'message', 'bg_color', 'is_active', 'created_at']
+    list_editable = ['is_active', 'badge_text', 'bg_color']
+    search_fields = ['message', 'badge_text']

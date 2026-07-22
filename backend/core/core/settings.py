@@ -164,5 +164,14 @@ STORAGES = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
-DEBUG = True
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = [
+    'https://www.tripik.in',
+    'https://tripik.in',
+    'https://*.vercel.app',
+    'https://*.railway.app',
+    'https://*.render.com',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
