@@ -456,7 +456,7 @@ export default function PackageDetail() {
         <footer className="package-sticky-footer" style={s.footer}>
           <div style={s.footerInner}>
             <div style={s.priceArea}>
-              <span style={s.priceLabel}>Price starting from</span>
+              <span style={s.priceLabel}>Starting from</span>
               <div style={s.priceBox}>
                 <span style={s.priceMain}>₹{Number(pkg.price_per_person).toLocaleString()}</span>
                 <span style={s.priceSub}>/person</span>
@@ -831,14 +831,14 @@ const s = {
   doneBtn: { background: '#0f172a', color: '#fff', width: '100%', padding: '16px', borderRadius: 18, fontWeight: 700, border: 'none', cursor: 'pointer' },
 
   // Sticky Footer
-  footer: { position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 500, background: '#fff', borderTop: '1px solid #e2e8f0', padding: '12px 20px 20px', zIndex: 1000 },
+  footer: { position: 'fixed', bottom: 72, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 500, background: '#fff', borderTop: '1px solid #e2e8f0', padding: '10px 20px', zIndex: 1000 },
   footerInner: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   priceArea: { display: 'flex', flexDirection: 'column' },
   priceLabel: { fontSize: 11, color: '#64748b', fontWeight: 600 },
   priceBox: { display: 'flex', alignItems: 'baseline', gap: 4 },
-  priceMain: { fontSize: 22, fontWeight: 900, color: '#0f172a' },
+  priceMain: { fontSize: 20, fontWeight: 900, color: '#0f172a' },
   priceSub: { fontSize: 12, color: '#64748b', fontWeight: 600 },
-  mainBtn: { background: '#059669', color: '#fff', padding: '12px 22px', borderRadius: 14, fontSize: 15, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8, border: 'none', cursor: 'pointer', boxShadow: '0 6px 20px rgba(5,150,105,0.25)' },
+  mainBtn: { background: '#059669', color: '#fff', padding: '10px 16px', borderRadius: 14, fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6, border: 'none', cursor: 'pointer', boxShadow: '0 6px 20px rgba(5,150,105,0.25)', whiteSpace: 'nowrap', flexShrink: 0 },
 
   loader: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 600, color: '#64748b' },
   

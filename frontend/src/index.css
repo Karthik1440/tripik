@@ -414,6 +414,19 @@ select:focus {
   .site-footer {
     padding-bottom: 90px !important;
   }
+
+  .package-detail-sidebar {
+    display: none !important;
+  }
+
+  .package-sticky-footer {
+    bottom: 72px !important;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .package-detail-container {
+    padding-bottom: 140px !important;
+  }
 }
 
 /* ── Running Text Announcement Marquee ── */
