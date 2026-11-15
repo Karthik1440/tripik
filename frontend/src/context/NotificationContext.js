@@ -8,17 +8,10 @@ export function NotificationProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, []);
-
   const fetchNotifications = useCallback(async () => {
     try {
-      const res = await api.get('/trips/notifications/'); // Backend endpoint we just added
+      const res = await api.get('/trips/notifications/');
       const notifs = res.data;
-      // For simplicity, we'll just count all as unread for now or use localStorage to track seen IDs
       const seenIds = JSON.parse(localStorage.getItem('tripik_seen_notifs') || '[]');
       const clearedIds = JSON.parse(localStorage.getItem('tripik_cleared_notifs') || '[]');
       
@@ -31,6 +24,12 @@ export function NotificationProvider({ children }) {
       console.error(e);
     }
   }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
   const markAllRead = useCallback(() => {
     setNotifications(prev => {

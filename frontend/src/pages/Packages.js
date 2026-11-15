@@ -1,7 +1,7 @@
-// src/pages/Packages.js — Professional Browse Packages Page
+// src/pages/Packages.js — Verified Clean Build
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, MapPin, Star, Heart, ArrowLeft, Home as HomeIcon, Briefcase, Navigation, User } from 'lucide-react';
+import { Search, Filter, MapPin, Star, Heart, ArrowLeft } from 'lucide-react';
 import api from '../api';
 import { useFavorites } from '../context/FavoritesContext';
 import BottomNav from '../components/BottomNav';

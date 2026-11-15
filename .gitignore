@@ -1,9 +1,15 @@
 __pycache__/
 *.pyc
+*.sqlite3
 db.sqlite3
-.env
+.env*
+*.env*
+*firebase*.json
+firebase-service-account*.json
+venv/
 node_modules/
 build/
 dist/
 staticfiles/
 media/
+.DS_Store

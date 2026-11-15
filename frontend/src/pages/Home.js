@@ -1,50 +1,42 @@
 // src/pages/Home.js — Redesigned matching reference UI
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  Search, Bell, MapPin, Star, Heart, SlidersHorizontal, ArrowRight,
+  Search, Bell, Star, Heart, SlidersHorizontal, ArrowRight,
   Compass, Mountain, Sun, Bike, Landmark, MoreHorizontal, ShieldCheck,
-  Headphones, Award, Tag, Sparkles, Navigation, Users, Shield, CheckCircle, User,
+  Headphones, Award, Tag, Sparkles, Users, User,
   BookOpen, Clock, X, ChevronDown, ChevronUp, Menu, PhoneCall, Info, HelpCircle
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
-import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
 import { useNotifications } from '../context/NotificationContext';
 import BottomNav from '../components/BottomNav';
 import Footer from '../components/Footer';
 
+// In-memory cache to make Back/Forward navigation instant without layout shifts
+let cachedHomeFeed = null;
+let cachedPackages = null;
+
 export default function Home() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { unreadCount } = useNotifications();
 
-  const [packages, setPackages] = useState([]);
-  const [banners, setBanners] = useState([]);
-  const [secBanner, setSecBanner] = useState(null);
-  const [blogs, setBlogs] = useState([]);
+  const [packages, setPackages] = useState(cachedPackages || []);
+  const [banners, setBanners] = useState(cachedHomeFeed?.banners || []);
+  const [secBanner, setSecBanner] = useState(cachedHomeFeed?.secondary_banner || null);
+  const [blogs, setBlogs] = useState(cachedHomeFeed?.blogs || []);
   const [selectedBlog, setSelectedBlog] = useState(null);
-  const [faqs, setFaqs] = useState([]);
+  const [faqs, setFaqs] = useState(cachedHomeFeed?.faqs || []);
   const [openFaqId, setOpenFaqId] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [infoModal, setInfoModal] = useState(null);
-  const [selectedCat, setSelectedCat] = useState('All');
+  const [selectedCat, setSelectedCat] = useState('');
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedPackages);
   const [activeBanner, setActiveBanner] = useState(0);
-  const [dbCategories, setDbCategories] = useState([]);
-
-  useEffect(() => {
-    if (user === undefined) return;
-    fetchInitialData();
-  }, [user]);
-
-  useEffect(() => {
-    if (user === undefined) return;
-    fetchPackages();
-  }, [selectedCat, user]);
+  const [dbCategories, setDbCategories] = useState(cachedHomeFeed?.categories || []);
 
   const getCategoryIcon = (catObj) => {
     if (catObj.image_url) {
@@ -66,26 +58,38 @@ export default function Home() {
 
   const fetchInitialData = async () => {
     try {
-      const [bRes, cRes, sRes, blogRes, faqRes] = await Promise.all([
-        api.get('/trips/banners/'),
-        api.get('/trips/categories/'),
-        api.get('/trips/secondary-banner/'),
-        api.get('/trips/blogs/'),
-        api.get('/trips/faqs/'),
-      ]);
-      setBanners(bRes.data);
-      setDbCategories(cRes.data || []);
-      if (sRes.data) setSecBanner(sRes.data);
-      if (blogRes.data) setBlogs(blogRes.data);
-      if (faqRes.data) setFaqs(faqRes.data);
-      fetchPackages();
+      // 🚀 1 fast combined request for all promotional & static home elements
+      const feedRes = await api.get('/trips/home-feed/');
+      if (feedRes.data) {
+        cachedHomeFeed = feedRes.data;
+        if (feedRes.data.banners) setBanners(feedRes.data.banners);
+        if (feedRes.data.categories) setDbCategories(feedRes.data.categories);
+        if (feedRes.data.secondary_banner) setSecBanner(feedRes.data.secondary_banner);
+        if (feedRes.data.blogs) setBlogs(feedRes.data.blogs);
+        if (feedRes.data.faqs) setFaqs(feedRes.data.faqs);
+      }
     } catch (e) {
-      console.error(e);
+      // Graceful fallback to individual endpoints if home-feed is unavailable
+      try {
+        const [bRes, cRes, sRes, blogRes, faqRes] = await Promise.all([
+          api.get('/trips/banners/'),
+          api.get('/trips/categories/'),
+          api.get('/trips/secondary-banner/'),
+          api.get('/trips/blogs/'),
+          api.get('/trips/faqs/'),
+        ]);
+        setBanners(bRes.data);
+        setDbCategories(cRes.data || []);
+        if (sRes.data) setSecBanner(sRes.data);
+        if (blogRes.data) setBlogs(blogRes.data);
+        if (faqRes.data) setFaqs(faqRes.data);
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
   const categories = [
-    { name: 'All', icon: <Compass size={18} /> },
     ...dbCategories.map(c => ({
       name: c.name,
       slug: c.slug,
@@ -95,21 +99,32 @@ export default function Home() {
     { name: 'More', icon: <MoreHorizontal size={18} /> },
   ];
 
-  const fetchPackages = async () => {
-    setLoading(true);
+  const fetchPackages = useCallback(async () => {
+    if (!cachedPackages) setLoading(true);
     try {
       let url = '/trips/packages/';
-      if (selectedCat && selectedCat !== 'All' && selectedCat !== 'More') {
+      if (selectedCat && selectedCat !== 'More') {
         url += `?category=${encodeURIComponent(selectedCat)}`;
       }
       const res = await api.get(url);
+      if (!selectedCat) {
+        cachedPackages = res.data;
+      }
       setPackages(res.data);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCat]);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  useEffect(() => {
+    fetchPackages();
+  }, [fetchPackages]);
 
   const filtered = packages.filter((p) =>
     p.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -119,11 +134,11 @@ export default function Home() {
   return (
     <div style={s.page}>
       <Helmet>
-        <title>Tripik | Handpicked Group Departures & Hidden Gem Travel Packages</title>
-        <meta name="description" content="Discover handpicked group departures, customized private tours, and secret hidden gem destinations across India. Book Kashmir, Kerala, Ladakh & Himachal packages." />
-        <meta name="keywords" content="Tripik, Kashmir group departures, Kerala tour packages, hidden gem destinations, Himachal trips, Ladakh bike tour" />
-        <meta property="og:title" content="Tripik | Handpicked Group Departures & Hidden Gem Travel Packages" />
-        <meta property="og:description" content="Handpicked group departures, customized private tours, and secret hidden gem destinations across India." />
+        <title>Tripik | Handpicked Group Departures & Tour Packages</title>
+        <meta name="description" content="Discover handpicked group departures and customized private tours across India. Book Kashmir, Kerala, Ladakh & Himachal packages." />
+        <meta name="keywords" content="Tripik, Kashmir group departures, Kerala tour packages, Himachal trips, Ladakh bike tour" />
+        <meta property="og:title" content="Tripik | Handpicked Group Departures & Tour Packages" />
+        <meta property="og:description" content="Handpicked group departures and customized private tours across India." />
         <meta property="og:image" content="https://www.tripik.in/logo512.png" />
         <script type="application/ld+json">
           {JSON.stringify({
@@ -154,7 +169,6 @@ export default function Home() {
           <nav className="desktop-nav-links">
             <Link to="/" className="desktop-nav-link active">Home</Link>
             <Link to="/packages" className="desktop-nav-link">Packages</Link>
-            <Link to="/hidden-gems" className="desktop-nav-link">Hidden Gems</Link>
             <Link to="/bookings" className="desktop-nav-link">My Bookings</Link>
             <Link to="/favorites" className="desktop-nav-link">Favorites</Link>
           </nav>
@@ -195,8 +209,10 @@ export default function Home() {
           <div
             style={s.bannerSlider}
             onScroll={(e) => {
-              const index = Math.round(e.target.scrollLeft / e.target.offsetWidth);
-              setActiveBanner(index);
+              const el = e.currentTarget;
+              if (!el.clientWidth) return;
+              const index = Math.round(el.scrollLeft / el.clientWidth);
+              setActiveBanner((prev) => (prev !== index ? index : prev));
             }}
           >
             {banners.length > 0 ? (
@@ -207,7 +223,7 @@ export default function Home() {
                     <span style={s.cursiveSubtitle}>Escape to</span>
                     <h3 style={s.bannerTitle}>{b.title}</h3>
                     <p style={s.bannerSub}>{b.subtitle || 'Unexplored places. Unforgettable memories.'}</p>
-                    <button onClick={() => navigate('/hidden-gems')} style={s.exploreBtn}>
+                    <button onClick={() => navigate(b.link_to || '/packages')} style={s.exploreBtn}>
                       <span>Explore Now</span> <ArrowRight size={14} />
                     </button>
                   </div>
@@ -217,14 +233,14 @@ export default function Home() {
               <div style={s.bannerItem}>
                 <img
                   src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200"
-                  alt="Hidden Paradise"
+                  alt="Incredible Destinations"
                   style={s.bannerImg}
                 />
                 <div style={s.bannerOverlay}>
                   <span style={s.cursiveSubtitle}>Escape to</span>
-                  <h3 style={s.bannerTitle}>Hidden Paradise</h3>
-                  <p style={s.bannerSub}>Unexplored places. Unforgettable memories.</p>
-                  <button onClick={() => navigate('/hidden-gems')} style={s.exploreBtn}>
+                  <h3 style={s.bannerTitle}>Incredible Destinations</h3>
+                  <p style={s.bannerSub}>Handpicked packages. Unforgettable memories.</p>
+                  <button onClick={() => navigate('/packages')} style={s.exploreBtn}>
                     <span>Explore Now</span> <ArrowRight size={14} />
                   </button>
                 </div>
@@ -301,7 +317,7 @@ export default function Home() {
                   if (cat.name === 'More') {
                     navigate('/packages');
                   } else {
-                    setSelectedCat(cat.name);
+                    setSelectedCat(prev => prev === cat.name ? '' : cat.name);
                   }
                 }}
                 style={{
@@ -705,7 +721,7 @@ export default function Home() {
               {infoModal === 'about' && (
                 <div style={s.infoTextContent}>
                   <p style={{ margin: '0 0 12px', lineHeight: 1.6, color: '#334155' }}>
-                    <strong>Tripik</strong> is India's premier travel experience platform organizing handpicked group departures, customized private tours, and unexplored hidden gem destinations.
+                    <strong>Tripik</strong> is India's premier travel experience platform organizing handpicked group departures and customized private tours.
                   </p>
                   <p style={{ margin: 0, lineHeight: 1.6, color: '#059669', fontWeight: '700' }}>
                     "Most travellers don't just travel with us, they meet strangers who quickly turn into their people."
@@ -1016,18 +1032,6 @@ const s = {
     justifyContent: 'center',
     fontWeight: '800',
     border: '2px solid #fff',
-  },
-  avatarBtn: {
-    width: '36px',
-    height: '36px',
-    background: 'none',
-    border: 'none',
-    padding: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
   },
   mainContainer: {
     maxWidth: 500,

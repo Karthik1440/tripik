@@ -44,7 +44,7 @@ export default function Footer() {
               </span>
             </div>
             <p style={s.brandDesc}>
-              India's premier travel platform for curated group departures, handpicked package tours, and secret hidden gem destinations.
+              India's premier travel platform for curated group departures and handpicked package tours.
             </p>
 
             <div style={s.trustBadgeWrap}>
@@ -59,7 +59,6 @@ export default function Footer() {
             <ul style={s.linkList}>
               <li><Link to="/" style={s.link}>Home</Link></li>
               <li><Link to="/packages" style={s.link}>Tour Packages</Link></li>
-              <li><Link to="/hidden-gems" style={s.link}>Hidden Gems</Link></li>
               <li><Link to="/bookings" style={s.link}>My Bookings</Link></li>
               <li><Link to="/favorites" style={s.link}>Favorite Places</Link></li>
             </ul>

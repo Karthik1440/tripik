@@ -7,11 +7,13 @@ from .views import (
     AllBookingsAdminView, UpdateBookingStatusView, NotificationsView,
     CategoryListView, HeroBannerListView, SecondaryBannerListView,
     BlogPostListView, BlogPostDetailView, FAQItemListView,
-    HiddenSpotListView, AddHiddenSpotView, HiddenSpotDetailView, AnnouncementBarView, DynamicSitemapView
+    HiddenSpotListView, AddHiddenSpotView, HiddenSpotDetailView, AnnouncementBarView, DynamicSitemapView,
+    HomeFeedView
 )
 
 urlpatterns = [
     # ── Travel Packages ──────────────────────────────────
+    path('home-feed/', HomeFeedView.as_view(), name='home-feed'),
     path('sitemap.xml', DynamicSitemapView.as_view(), name='dynamic-sitemap'),
     path('announcement-bar/', AnnouncementBarView.as_view(), name='announcement-bar'),
     path('packages/', PackageListView.as_view(), name='package-list'),

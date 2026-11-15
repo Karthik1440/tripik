@@ -296,12 +296,6 @@ select:focus {
     width: 100% !important;
   }
 
-  /* Hidden Gems Grid on Desktop */
-  .desktop-gems-grid {
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 20px !important;
-  }
-
   /* Banner 2 on Desktop */
   .desktop-banner2-wrap {
     margin-left: 0 !important;

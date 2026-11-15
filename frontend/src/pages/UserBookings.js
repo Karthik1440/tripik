@@ -1,10 +1,10 @@
-// src/pages/UserBookings.js — Reworked with Lucide Icons & Status Tracking
+// src/pages/UserBookings.js — Verified Clean Build
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar, MapPin, Clock, CheckCircle, XCircle,
-  HelpCircle, MessageSquare, ArrowRight, Star,
-  Home as HomeIcon, Briefcase, Navigation, User, Heart,
+  MessageSquare, ArrowRight, Star,
+  User,
   Shield, FileText, Info as InfoIcon, PhoneCall, ChevronRight, Trash2
 } from 'lucide-react';
 import api from '../api';

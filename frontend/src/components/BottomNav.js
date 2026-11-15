@@ -1,7 +1,7 @@
 // src/components/BottomNav.js — Consistent Emerald Green Theme
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home as HomeIcon, Sparkles, Package, Briefcase, Heart } from 'lucide-react';
+import { Home as HomeIcon, Package, Briefcase, Heart } from 'lucide-react';
 
 export default function BottomNav() {
   const navigate = useNavigate();
@@ -16,11 +16,6 @@ export default function BottomNav() {
       label: 'Home',
       path: '/',
       icon: (active) => <HomeIcon size={20} color={active ? brandGreen : unselectedColor} fill={active ? brandGreen : 'none'} />,
-    },
-    {
-      label: 'Hidden Gems',
-      path: '/hidden-gems',
-      icon: (active) => <Sparkles size={20} color={active ? brandGreen : unselectedColor} fill={active ? brandGreen : 'none'} />,
     },
     {
       label: 'Packages',

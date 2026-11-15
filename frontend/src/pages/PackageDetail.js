@@ -1,5 +1,5 @@
-// src/pages/PackageDetail.js — Reworked with Desktop View, Lucide Icons & Favorites
-import { useState, useEffect } from 'react';
+// src/pages/PackageDetail.js — Verified Clean Build
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, Heart, Star, MapPin, Calendar, Users, 
@@ -8,15 +8,12 @@ import {
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import api from '../api';
-import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
-import Footer from '../components/Footer';
 import BottomNav from '../components/BottomNav';
 
 export default function PackageDetail() {
   const { packageId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const [pkg, setPkg] = useState(null);
@@ -32,14 +29,8 @@ export default function PackageDetail() {
   const [children, setChildren] = useState(0);
   const [startDate, setStartDate] = useState('');
   const [phone, setPhone] = useState('');
-  const [bookingSuccess, setBookingSuccess] = useState(false);
 
-  useEffect(() => {
-    fetchDetail();
-    window.scrollTo(0, 0);
-  }, [packageId]);
-
-  const fetchDetail = async () => {
+  const fetchDetail = useCallback(async () => {
     try {
       const [pkgRes, revRes] = await Promise.all([
         api.get(`/trips/packages/${packageId}/`),
@@ -52,7 +43,12 @@ export default function PackageDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [packageId]);
+
+  useEffect(() => {
+    fetchDetail();
+    window.scrollTo(0, 0);
+  }, [fetchDetail]);
 
   const handleBook = async () => {
     if (!startDate) {
@@ -72,7 +68,6 @@ export default function PackageDetail() {
         phone,
       };
       await api.post(`/trips/packages/${packageId}/book/`, payload);
-      setBookingSuccess(true);
       setStep(3);
     } catch (e) {
       const msg = e.response?.data?.detail || "Booking failed. Please check details.";
@@ -137,7 +132,6 @@ export default function PackageDetail() {
           <nav className="desktop-nav-links">
             <Link to="/" className="desktop-nav-link">Home</Link>
             <Link to="/packages" className="desktop-nav-link active">Packages</Link>
-            <Link to="/hidden-gems" className="desktop-nav-link">Hidden Gems</Link>
             <Link to="/bookings" className="desktop-nav-link">My Bookings</Link>
             <Link to="/favorites" className="desktop-nav-link">Favorites</Link>
           </nav>
@@ -159,8 +153,10 @@ export default function PackageDetail() {
       {/* ── 2. HERO IMAGE GALLERY SLIDER ── */}
       <div className="package-detail-hero" style={s.hero}>
         <div style={s.gallerySlider} onScroll={e => {
-            const index = Math.round(e.target.scrollLeft / e.target.offsetWidth);
-            setActiveImg(index);
+            const el = e.currentTarget;
+            if (!el.clientWidth) return;
+            const index = Math.round(el.scrollLeft / el.clientWidth);
+            setActiveImg((prev) => (prev !== index ? index : prev));
         }}>
           {/* Main Cover Image first */}
           <div style={s.slideItem}><img src={pkg.banner_url} alt={pkg.title} style={s.heroImg} /></div>
@@ -527,7 +523,7 @@ export default function PackageDetail() {
             <div style={s.modalCardBody}>
               {infoModal === 'about' && (
                 <p style={{ margin: 0, lineHeight: 1.6, color: '#334155' }}>
-                  <strong>Tripik</strong> is India's premier travel experience platform organizing handpicked group departures, customized private tours, and unexplored hidden gem destinations.
+                  <strong>Tripik</strong> is India's premier travel experience platform organizing handpicked group departures and customized private tours.
                 </p>
               )}
               {infoModal === 'contact' && (

@@ -3,6 +3,7 @@ from firebase_admin import credentials, auth as firebase_auth
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from django.conf import settings
+from django.core.cache import cache
 from .models import AppUser
 import os
 import json
@@ -62,10 +63,14 @@ class FirebaseAuthentication(BaseAuthentication):
         email = decoded_token.get('email', '')
         name = decoded_token.get('name') or ''
 
-        user, _ = AppUser.objects.get_or_create(
-            firebase_uid=uid,
-            defaults={'email': email, 'display_name': name}
-        )
+        cache_key = f"auth_user_{uid}"
+        user = cache.get(cache_key)
+        if not user:
+            user, _ = AppUser.objects.get_or_create(
+                firebase_uid=uid,
+                defaults={'email': email, 'display_name': name}
+            )
+            cache.set(cache_key, user, timeout=300)
 
         return (user, None)
 

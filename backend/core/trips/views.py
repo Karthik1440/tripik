@@ -36,7 +36,11 @@ class PackageListView(APIView):
         days = request.query_params.get('days')
         category = request.query_params.get('category')
         
-        packages = TourPackage.objects.filter(is_active=True).order_by('-avg_rating', '-total_bookings')
+        packages = (
+            TourPackage.objects.filter(is_active=True)
+            .select_related('category')
+            .order_by('-avg_rating', '-total_bookings')
+        )
         
         if category and category.lower() != 'all':
             packages = packages.filter(
@@ -55,7 +59,9 @@ class PackageListView(APIView):
             packages = packages.filter(duration_days=days)
         
         serializer = PackageListSerializer(packages, many=True, context={'request': request})
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=120'
+        return response
 
 
 class PackageDetailView(APIView):
@@ -63,9 +69,16 @@ class PackageDetailView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, package_id):
-        package = get_object_or_404(TourPackage, id=package_id, is_active=True)
+        package = get_object_or_404(
+            TourPackage.objects.select_related('pricing', 'category')
+            .prefetch_related('itinerary_days__places', 'gallery_images', 'includes_excludes', 'addons', 'reviews'),
+            id=package_id,
+            is_active=True
+        )
         serializer = PackageDetailSerializer(package, context={'request': request})
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=120'
+        return response
 
 
 class BookPackageView(APIView):
@@ -285,7 +298,9 @@ class CategoryListView(APIView):
     def get(self, request):
         categories = Category.objects.filter(is_active=True)
         serializer = CategorySerializer(categories, many=True, context={'request': request})
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'public, max-age=120, stale-while-revalidate=300'
+        return response
 
 class HeroBannerListView(APIView):
     """GET: All active hero banners"""
@@ -293,7 +308,9 @@ class HeroBannerListView(APIView):
     def get(self, request):
         banners = HeroBanner.objects.filter(is_active=True)
         serializer = HeroBannerSerializer(banners, many=True, context={'request': request})
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'public, max-age=120, stale-while-revalidate=300'
+        return response
 
 class SecondaryBannerListView(APIView):
     """GET: Active secondary banner (under Why Tripik)"""
@@ -303,7 +320,9 @@ class SecondaryBannerListView(APIView):
         if not banner:
             return Response(None)
         serializer = SecondaryBannerSerializer(banner, context={'request': request})
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'public, max-age=120, stale-while-revalidate=300'
+        return response
 
 class BlogPostListView(APIView):
     """GET: List published blog posts for Home page section"""
@@ -311,7 +330,9 @@ class BlogPostListView(APIView):
     def get(self, request):
         blogs = BlogPost.objects.filter(is_published=True)
         serializer = BlogPostSerializer(blogs, many=True, context={'request': request})
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'public, max-age=120, stale-while-revalidate=300'
+        return response
 
 class BlogPostDetailView(APIView):
     """GET: Single blog detail by slug"""
@@ -319,7 +340,9 @@ class BlogPostDetailView(APIView):
     def get(self, request, slug):
         blog = get_object_or_404(BlogPost, slug=slug, is_published=True)
         serializer = BlogPostSerializer(blog, context={'request': request})
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'public, max-age=120, stale-while-revalidate=300'
+        return response
 
 class FAQItemListView(APIView):
     """GET: Active FAQ items for Home page section"""
@@ -327,7 +350,34 @@ class FAQItemListView(APIView):
     def get(self, request):
         faqs = FAQItem.objects.filter(is_active=True)
         serializer = FAQItemSerializer(faqs, many=True)
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'public, max-age=120, stale-while-revalidate=300'
+        return response
+
+
+class HomeFeedView(APIView):
+    """GET: Bundled Home page feed (banners, categories, secondary banner, blogs, faqs, announcement) in 1 single request"""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        banners = HeroBanner.objects.filter(is_active=True)
+        categories = Category.objects.filter(is_active=True)
+        secondary_banner = SecondaryBanner.objects.filter(is_active=True).first()
+        blogs = BlogPost.objects.filter(is_published=True)[:6]
+        faqs = FAQItem.objects.filter(is_active=True)
+        announcement = AnnouncementBar.objects.filter(is_active=True).first()
+
+        data = {
+            'banners': HeroBannerSerializer(banners, many=True, context={'request': request}).data,
+            'categories': CategorySerializer(categories, many=True, context={'request': request}).data,
+            'secondary_banner': SecondaryBannerSerializer(secondary_banner, context={'request': request}).data if secondary_banner else None,
+            'blogs': BlogPostSerializer(blogs, many=True, context={'request': request}).data,
+            'faqs': FAQItemSerializer(faqs, many=True).data,
+            'announcement': AnnouncementBarSerializer(announcement, context={'request': request}).data if announcement else None,
+        }
+        response = Response(data)
+        response['Cache-Control'] = 'public, max-age=120, stale-while-revalidate=300'
+        return response
 
 
 class HiddenSpotListView(APIView):
@@ -439,28 +489,26 @@ class AnnouncementBarView(APIView):
         if not bar:
             return Response(None, status=status.HTTP_204_NO_CONTENT)
         serializer = AnnouncementBarSerializer(bar, context={'request': request})
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        response['Cache-Control'] = 'public, max-age=120, stale-while-revalidate=300'
+        return response
 
 
 from django.http import HttpResponse
 
 class DynamicSitemapView(APIView):
-    """GET: Generate dynamic XML sitemap for packages and hidden spots"""
+    """GET: Generate dynamic XML sitemap for packages"""
     permission_classes = [AllowAny]
 
     def get(self, request):
         xml_content = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
         
-        for route, prio in [('/', '1.0'), ('/packages', '0.9'), ('/hidden-gems', '0.9')]:
+        for route, prio in [('/', '1.0'), ('/packages', '0.9')]:
             xml_content.append(f'  <url><loc>https://www.tripik.in{route}</loc><priority>{prio}</priority></url>')
             
         packages = TourPackage.objects.filter(is_active=True)
         for pkg in packages:
             xml_content.append(f'  <url><loc>https://www.tripik.in/package/{pkg.id}</loc><priority>0.8</priority></url>')
-
-        spots = HiddenSpot.objects.filter(is_approved=True)
-        for spot in spots:
-            xml_content.append(f'  <url><loc>https://www.tripik.in/hidden-gems/{spot.id}</loc><priority>0.7</priority></url>')
 
         xml_content.append('</urlset>')
         return HttpResponse('\n'.join(xml_content), content_type='application/xml')

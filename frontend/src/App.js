@@ -15,8 +15,6 @@ import Packages from './pages/Packages';
 import Favorites from './pages/Favorites';
 import Notifications from './pages/Notifications';
 import ForgotPassword from './pages/ForgotPassword';
-import HiddenGems from './pages/HiddenGems';
-import HiddenSpotDetail from './pages/HiddenSpotDetail';
 
 import AnnouncementBar from './components/AnnouncementBar';
 
@@ -37,8 +35,6 @@ export default function App() {
                 <Route path="/packages" element={<Packages />} />
                 <Route path="/favorites" element={<Favorites />} />
                 <Route path="/notifications" element={<Notifications />} />
-                <Route path="/hidden-gems" element={<HiddenGems />} />
-                <Route path="/hidden-gems/:spotId" element={<HiddenSpotDetail />} />
 
                 {/* ── Protected Routes ── */}
                 <Route path="/bookings" element={
